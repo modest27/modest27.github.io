@@ -1,0 +1,524 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>(四) webpack原理 | liu's blog</title><meta name="keywords" content="webpack,打包,前端"><meta name="author" content="mr liu"><meta name="copyright" content="mr liu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="webpack入门到进阶系列(四)webpack原理学习目标 了解webpack打包原理 了解webpack的loader原理 了解webpack的插件原理 了解ast抽象语法树的应用 了解tapable的原理 手写一个简单的webpack  项目准备工作 新建一个项目，起一个炫酷的名字  新建bin目录，将打包工具主程序放入其中 主程序的顶部应当有：#!&#x2F;usr&#x2F;bin&#x2F;env node标识，指">
+<meta property="og:type" content="article">
+<meta property="og:title" content="(四) webpack原理">
+<meta property="og:url" content="http://example.com/2022/02/10/webpack%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="liu&#39;s blog">
+<meta property="og:description" content="webpack入门到进阶系列(四)webpack原理学习目标 了解webpack打包原理 了解webpack的loader原理 了解webpack的插件原理 了解ast抽象语法树的应用 了解tapable的原理 手写一个简单的webpack  项目准备工作 新建一个项目，起一个炫酷的名字  新建bin目录，将打包工具主程序放入其中 主程序的顶部应当有：#!&#x2F;usr&#x2F;bin&#x2F;env node标识，指">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg">
+<meta property="article:published_time" content="2022-02-10T13:17:13.000Z">
+<meta property="article:modified_time" content="2022-02-10T13:30:58.115Z">
+<meta property="article:author" content="mr liu">
+<meta property="article:tag" content="webpack">
+<meta property="article:tag" content="打包">
+<meta property="article:tag" content="前端">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/02/10/webpack%E5%8E%9F%E7%90%86/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '(四) webpack原理',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-02-10 21:30:58'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="http://img.mp.itc.cn/upload/20170808/5861bc790e654d56bc9289c567b44875_th.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">liu's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">(四) webpack原理</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-02-10T13:17:13.000Z" title="发表于 2022-02-10 21:17:13">2022-02-10</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-02-10T13:30:58.115Z" title="更新于 2022-02-10 21:30:58">2022-02-10</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/webpack/">webpack</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="(四) webpack原理"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="webpack入门到进阶系列"><a href="#webpack入门到进阶系列" class="headerlink" title="webpack入门到进阶系列"></a>webpack入门到进阶系列</h1><h1 id="四-webpack原理"><a href="#四-webpack原理" class="headerlink" title="(四)webpack原理"></a>(四)webpack原理</h1><h2 id="学习目标"><a href="#学习目标" class="headerlink" title="学习目标"></a>学习目标</h2><ul>
+<li>了解webpack打包原理</li>
+<li>了解webpack的loader原理</li>
+<li>了解webpack的插件原理</li>
+<li>了解ast抽象语法树的应用</li>
+<li>了解tapable的原理</li>
+<li>手写一个简单的webpack</li>
+</ul>
+<h2 id="项目准备工作"><a href="#项目准备工作" class="headerlink" title="项目准备工作"></a>项目准备工作</h2><ol>
+<li><p>新建一个项目，起一个炫酷的名字</p>
+</li>
+<li><p>新建<code>bin</code>目录，将打包工具主程序放入其中</p>
+<p>主程序的顶部应当有：<code>#!/usr/bin/env node</code>标识，指定程序执行环境为node</p>
+</li>
+<li><p>在<code>package.json</code>中配置<code>bin</code>脚本</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line">	<span class="attr">&quot;bin&quot;</span>: <span class="string">&quot;./bin/modest-pack.js&quot;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>通过<code>npm link</code>链接到全局包中，供本地测试使用</p>
+</li>
+</ol>
+<h2 id="分析webpack打包的bundle文件"><a href="#分析webpack打包的bundle文件" class="headerlink" title="分析webpack打包的bundle文件"></a>分析webpack打包的bundle文件</h2><p>其内部就是自己实现了一个<code>__webpack_require__</code>函数，递归导入依赖关系</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line">(<span class="function"><span class="keyword">function</span> (<span class="params">modules</span>) </span>&#123; <span class="comment">// webpackBootstrap</span></span><br><span class="line">  <span class="comment">// The module cache</span></span><br><span class="line">  <span class="keyword">var</span> installedModules = &#123;&#125;;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// The require function</span></span><br><span class="line">  <span class="function"><span class="keyword">function</span> <span class="title">__webpack_require__</span>(<span class="params">moduleId</span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Check if module is in cache</span></span><br><span class="line">    <span class="keyword">if</span> (installedModules[moduleId]) &#123;</span><br><span class="line">      <span class="keyword">return</span> installedModules[moduleId].exports;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">// Create a new module (and put it into the cache)</span></span><br><span class="line">    <span class="keyword">var</span> <span class="built_in">module</span> = installedModules[moduleId] = &#123;</span><br><span class="line">      <span class="attr">i</span>: moduleId,</span><br><span class="line">      <span class="attr">l</span>: <span class="literal">false</span>,</span><br><span class="line">      <span class="attr">exports</span>: &#123;&#125;</span><br><span class="line">    &#125;;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Execute the module function</span></span><br><span class="line">    modules[moduleId].call(<span class="built_in">module</span>.exports, <span class="built_in">module</span>, <span class="built_in">module</span>.exports, __webpack_require__);</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Flag the module as loaded</span></span><br><span class="line">    <span class="built_in">module</span>.l = <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Return the exports of the module</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">module</span>.exports;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="comment">// Load entry module and return exports</span></span><br><span class="line">  <span class="keyword">return</span> __webpack_require__(__webpack_require__.s = <span class="string">&quot;./src/index.js&quot;</span>);</span><br><span class="line">&#125;)</span><br><span class="line">  (&#123;</span><br><span class="line">    <span class="string">&quot;./src/index.js&quot;</span>:</span><br><span class="line">      (<span class="function"><span class="keyword">function</span> (<span class="params"><span class="built_in">module</span>, <span class="built_in">exports</span>, __webpack_require__</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">eval</span>(<span class="string">&quot;let news = __webpack_require__(/*! ./news.js */ \&quot;./src/news.js\&quot;)\r\nconsole.log(news.content)\n\n//# sourceURL=webpack:///./src/index.js?&quot;</span>);</span><br><span class="line">      &#125;),</span><br><span class="line">    <span class="string">&quot;./src/message.js&quot;</span>:</span><br><span class="line">      (<span class="function"><span class="keyword">function</span> (<span class="params"><span class="built_in">module</span>, <span class="built_in">exports</span></span>) </span>&#123;</span><br><span class="line">        <span class="built_in">eval</span>(<span class="string">&quot;module.exports = &#123;\r\n  content: &#x27;今天要下雨了!!!&#x27;\r\n&#125;\n\n//# sourceURL=webpack:///./src/message.js?&quot;</span>);</span><br><span class="line">      &#125;),</span><br><span class="line">    <span class="string">&quot;./src/news.js&quot;</span>:</span><br><span class="line">      (<span class="function"><span class="keyword">function</span> (<span class="params"><span class="built_in">module</span>, <span class="built_in">exports</span>, __webpack_require__</span>) </span>&#123;</span><br><span class="line">        <span class="built_in">eval</span>(<span class="string">&quot;let message = __webpack_require__(/*! ./message.js */ \&quot;./src/message.js\&quot;)\r\n\r\nmodule.exports = &#123;\r\n  content: &#x27;今天有个大新闻,爆炸消息!!!内容是:&#x27; + message.content\r\n&#125;\n\n//# sourceURL=webpack:///./src/news.js?&quot;</span>);</span><br><span class="line">      &#125;)</span><br><span class="line">  &#125;);</span><br></pre></td></tr></table></figure>
+
+<h2 id="自定义loader"><a href="#自定义loader" class="headerlink" title="自定义loader"></a>自定义loader</h2><h3 id="学习目标-1"><a href="#学习目标-1" class="headerlink" title="学习目标"></a>学习目标</h3><p>在学习给自己写的modest-pack工具添加loader功能之前，得先学习webpack中如何自定义loader，所以学习步骤分为两大步：</p>
+<ol>
+<li>掌握自定义webpack的loader</li>
+<li>学习给modest-pack添加loader功能并写一个loader</li>
+</ol>
+<p>webpack以及我们自己写的modest-pack都只能处理JavaScript文件，如果需要处理其他文件，或者对JavaScript代码做一些操作，则需要用到loader。</p>
+<p>loader是webpack中四大核心概念之一，主要功能是将一段匹配规则的代码进行加工处理，生成最终的代码后输出，是webpack打包环节中非常重要的一环。</p>
+<blockquote>
+<p>loader 可以将所有类型的文件转换为 webpack 能够处理的有效模块，然后你就可以利用 webpack 的打包能力，对它们进行处理。</p>
+</blockquote>
+<p>之前都使用过别人写好的loader，步骤大致分为：</p>
+<ol>
+<li>装包</li>
+<li>在webpack.config.js中配置module节点下的rules即可，例如babel-loader（省略其他配置，只论loader）</li>
+<li>（可选步骤）可能还需要其他的配置，例如babel需要配置presets和plugin</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="attr">entry</span>: <span class="string">&#x27;./src/index.js&#x27;</span>,</span><br><span class="line">  <span class="attr">output</span>: &#123;</span><br><span class="line">    <span class="attr">path</span>: path.join(__dirname, <span class="string">&#x27;dist&#x27;</span>),</span><br><span class="line">    <span class="attr">filename</span>: <span class="string">&#x27;bundle.js&#x27;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">module</span>: &#123;</span><br><span class="line">    <span class="attr">rules</span>: [</span><br><span class="line">      &#123; <span class="attr">test</span>: <span class="regexp">/\.js$/</span>, use: <span class="string">&#x27;babel-loader&#x27;</span> &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">mode</span>: <span class="string">&#x27;development&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="实现一个简单的loader"><a href="#实现一个简单的loader" class="headerlink" title="实现一个简单的loader"></a>实现一个简单的loader</h3><p>loader到底是什么东西？能不能自己写？</p>
+<p>答案是肯定的，loader就是一个函数，同样也可以自己来写</p>
+<ol>
+<li>在项目根目录中新建一个目录存放自己写的loader：</li>
+</ol>
+<p><img src="../../../../assets/webpack%E7%B3%BB%E5%88%97/1561174288710.png" alt="1561174288710"></p>
+<ol start="2">
+<li><p>编写myloader.js，其实loader就是对外暴露一个函数</p>
+<p>第一个参数就是loader要处理的代码</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(source) <span class="comment">// 只是简单打印并返回结果，不作任何处理</span></span><br><span class="line">  <span class="keyword">return</span> source</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>同样在webpack.config.js中配置自己写的loader，为了方便演示，直接匹配所有的js文件使用自己的myloader进行处理</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="attr">entry</span>: <span class="string">&#x27;./src/index.js&#x27;</span>,</span><br><span class="line">  <span class="attr">output</span>: &#123;</span><br><span class="line">    <span class="attr">path</span>: path.join(__dirname, <span class="string">&#x27;dist&#x27;</span>),</span><br><span class="line">    <span class="attr">filename</span>: <span class="string">&#x27;bundle.js&#x27;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">module</span>: &#123;</span><br><span class="line">    <span class="attr">rules</span>: [</span><br><span class="line">      &#123; <span class="attr">test</span>: <span class="regexp">/.js$/</span>, use: <span class="string">&#x27;./loaders/myloader.js&#x27;</span> &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">mode</span>: <span class="string">&#x27;development&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>如果需要实现一个简单的loader，例如将js中所有的“今天”替换成“明天”</p>
+<p>只需要修改myloader.js的内容如下即可</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> source.replace(<span class="regexp">/今天/g</span>, <span class="string">&#x27;明天&#x27;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>同时也可以配置多个loader对代码进行处理</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="attr">entry</span>: <span class="string">&#x27;./src/index.js&#x27;</span>,</span><br><span class="line">  <span class="attr">output</span>: &#123;</span><br><span class="line">    <span class="attr">path</span>: path.join(__dirname, <span class="string">&#x27;dist&#x27;</span>),</span><br><span class="line">    <span class="attr">filename</span>: <span class="string">&#x27;bundle.js&#x27;</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">module</span>: &#123;</span><br><span class="line">    <span class="attr">rules</span>: [</span><br><span class="line">      &#123; <span class="attr">test</span>: <span class="regexp">/.js$/</span>, use: [<span class="string">&#x27;./loaders/myloader2.js&#x27;</span>, <span class="string">&#x27;./loaders/myloader.js&#x27;</span>] &#125;</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">mode</span>: <span class="string">&#x27;development&#x27;</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>myloader2.js</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = <span class="function"><span class="keyword">function</span>(<span class="params">source</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> source.replace(<span class="regexp">/爆炸/g</span>, <span class="string">&#x27;小道&#x27;</span>)</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></li>
+</ol>
+<h3 id="loader的分类"><a href="#loader的分类" class="headerlink" title="loader的分类"></a>loader的分类</h3><p>不同类型的loader加载时优先级不同，优先级顺序遵循：</p>
+<p>前置 &gt; 行内 &gt; 普通 &gt; 后置</p>
+<p>pre: 前置loader</p>
+<p>post: 后置loader</p>
+<p>指定Rule.enforce的属性即可设置loader的种类，不设置默认为普通loader</p>
+<h3 id="在modest-pack中添加loader的功能"><a href="#在modest-pack中添加loader的功能" class="headerlink" title="在modest-pack中添加loader的功能"></a>在modest-pack中添加loader的功能</h3><p>通过配置loader和手写loader可以发现，其实webpack能支持loader，主要步骤如下：</p>
+<ol>
+<li>读取webpack.config.js配置文件的module.rules配置项，进行倒序迭代（rules的每项匹配规则按倒序匹配）</li>
+<li>根据正则匹配到对应的文件类型，同时再批量导入loader函数</li>
+<li>倒序迭代调用所有loader函数（loader的加载顺序从右到左，也是倒叙）</li>
+<li>最后返回处理后的代码</li>
+</ol>
+<p>在实现modest-pack的loader功能时，同样也可以在加载每个模块时，根据rules的正则来匹配是否满足条件，如果满足条件则加载对应的loader函数并迭代调用</p>
+<p>depAnalyse()方法中获取到源码后，读取loader：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">let</span> rules = <span class="built_in">this</span>.config.module.rules</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> i = rules.length - <span class="number">1</span>; i &gt;= <span class="number">0</span>; i--) &#123;</span><br><span class="line">    <span class="comment">// console.log(rules[i])</span></span><br><span class="line">    <span class="keyword">let</span> &#123;test, use&#125; = rules[i]</span><br><span class="line">    <span class="keyword">if</span> (test.test(modulePath)) &#123;</span><br><span class="line">        <span class="keyword">for</span> (<span class="keyword">let</span> j = use.length - <span class="number">1</span>; j &gt;= <span class="number">0</span>; j--) &#123;</span><br><span class="line">            <span class="keyword">let</span> loaderPath = path.join(<span class="built_in">this</span>.root, use[j])</span><br><span class="line">            <span class="keyword">let</span> loader = <span class="built_in">require</span>(loaderPath)</span><br><span class="line">            source = loader(source)</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="自定义插件"><a href="#自定义插件" class="headerlink" title="自定义插件"></a>自定义插件</h2><h3 id="学习目标-2"><a href="#学习目标-2" class="headerlink" title="学习目标"></a>学习目标</h3><p>在学习给自己写的modest-pack工具添加plugin功能之前，得先学习webpack中如何自定义plugin，所以学习步骤分为两大步：</p>
+<ol>
+<li>掌握自定义webpack的plugin</li>
+<li>学习给modest-pack添加plugin功能并写一个plugin</li>
+</ol>
+<blockquote>
+<p> 插件接口可以帮助用户直接触及到编译过程(compilation process)。 插件可以将处理函数(handler)注册到编译过程中的不同事件点上运行的生命周期钩子函数上。 当执行每个钩子时， 插件能够完全访问到编译(compilation)的当前状态。</p>
+</blockquote>
+<p>简单理解，自定义插件就是在webpack编译过程的生命周期钩子中，进行编码开发，实现一些功能。</p>
+<h3 id="webpack插件的组成"><a href="#webpack插件的组成" class="headerlink" title="webpack插件的组成"></a>webpack插件的组成</h3><ul>
+<li>一个 JavaScript 命名函数。</li>
+<li>在插件函数的 prototype 上定义一个 apply 方法。</li>
+<li>指定一个绑定到 webpack 自身的事件钩子。</li>
+<li>处理 webpack 内部实例的特定数据。</li>
+<li>功能完成后调用 webpack 提供的回调。</li>
+</ul>
+<h3 id="webpack的生命周期钩子"><a href="#webpack的生命周期钩子" class="headerlink" title="webpack的生命周期钩子"></a>webpack的生命周期钩子</h3><table>
+<thead>
+<tr>
+<th align="center">钩子</th>
+<th align="center">作用</th>
+<th align="center">参数</th>
+<th align="center">类型</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">entryOption</td>
+<td align="center">在处理了webpack选项的entry配置后调用</td>
+<td align="center">context, entry</td>
+<td align="center">SyncBailHook</td>
+</tr>
+<tr>
+<td align="center"><strong>afterPlugins</strong></td>
+<td align="center">在初始化内部插件列表后调用。</td>
+<td align="center">compiler</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">afterResolvers</td>
+<td align="center">Compiler初始化完毕后调用。</td>
+<td align="center">compiler</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">environment</td>
+<td align="center">在准备编译器环境时调用，在对配置文件中的插件进行初始化之后立即调用。</td>
+<td align="center">无</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">afterEnvironment</td>
+<td align="center">在environment钩子之后立即调用，当编译器环境设置完成时。</td>
+<td align="center">无</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center"><strong>beforeRun</strong></td>
+<td align="center">在运行Compiler之前调用。</td>
+<td align="center">compiler</td>
+<td align="center">AsyncSeriesHook</td>
+</tr>
+<tr>
+<td align="center"><strong>run</strong></td>
+<td align="center">Compiler开始工作时调用。</td>
+<td align="center">compiler</td>
+<td align="center">AsyncSeriesHook</td>
+</tr>
+<tr>
+<td align="center">watchRun</td>
+<td align="center">在新的编译被触发但在实际开始编译之前，在监视模式期间执行插件。</td>
+<td align="center">compiler</td>
+<td align="center">AsyncSeriesHook</td>
+</tr>
+<tr>
+<td align="center">normalModuleFactory</td>
+<td align="center">NormalModuleFactory创建后调用。</td>
+<td align="center">normalModuleFactory</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">contextModuleFactory</td>
+<td align="center">ContextModuleFactory创建后运行插件。</td>
+<td align="center">contextModuleFactory</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">beforeCompile</td>
+<td align="center">创建compilation参数后执行插件。</td>
+<td align="center">compilationParams</td>
+<td align="center">AsyncSeriesHook</td>
+</tr>
+<tr>
+<td align="center">compile</td>
+<td align="center">beforeCompile在创建新编辑之前立即调用。</td>
+<td align="center">compilationParams</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">thisCompilation</td>
+<td align="center">在触发compilation事件之前，在初始化编译时调用。</td>
+<td align="center">compilation，compilationParams</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">compilation</td>
+<td align="center">创建compilation后运行插件。</td>
+<td align="center">compilation，compilationParams</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center"><strong>make</strong></td>
+<td align="center">在完成编译前调用。</td>
+<td align="center">compilation</td>
+<td align="center">AsyncParallelHook</td>
+</tr>
+<tr>
+<td align="center"><strong>afterCompile</strong></td>
+<td align="center">在完成编译后调用。</td>
+<td align="center">compilation</td>
+<td align="center">AsyncSeriesHook</td>
+</tr>
+<tr>
+<td align="center"><strong>shouldEmit</strong></td>
+<td align="center">在发射assets之前调用。应该返回一个告诉是否发射出去的布尔值。</td>
+<td align="center">compilation</td>
+<td align="center">SyncBailHook</td>
+</tr>
+<tr>
+<td align="center"><strong>emit</strong></td>
+<td align="center">向assets目录发射assets时调用</td>
+<td align="center">compilation</td>
+<td align="center">AsyncSeriesHook</td>
+</tr>
+<tr>
+<td align="center"><strong>afterEmit</strong></td>
+<td align="center">在将assets发送到输出目录后调用。</td>
+<td align="center">compilation</td>
+<td align="center">AsyncSeriesHook</td>
+</tr>
+<tr>
+<td align="center"><strong>done</strong></td>
+<td align="center">编译完成后调用。</td>
+<td align="center">stats</td>
+<td align="center">AsyncSeriesHook</td>
+</tr>
+<tr>
+<td align="center">failed</td>
+<td align="center">如果编译失败，则调用。</td>
+<td align="center">error</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">invalid</td>
+<td align="center">在watching compilation失效时调用。</td>
+<td align="center">fileName，changeTime</td>
+<td align="center">SyncHook</td>
+</tr>
+<tr>
+<td align="center">watchClose</td>
+<td align="center">在watching compilation停止时调用。</td>
+<td align="center">无</td>
+<td align="center">SyncHook</td>
+</tr>
+</tbody></table>
+<h3 id="实现一个简单的plugin"><a href="#实现一个简单的plugin" class="headerlink" title="实现一个简单的plugin"></a>实现一个简单的plugin</h3><p><code>compiler.hooks.done</code>表示编译完成后调用的钩子，所以只需要在这个阶段注册时间，当打包完成会自动回调这个函数</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">HelloWorldPlugin</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="title">apply</span>(<span class="params">compiler</span>)</span> &#123;</span><br><span class="line">    compiler.hooks.done.tap(<span class="string">&#x27;Hello World Plugin&#x27;</span>, <span class="function">(<span class="params">stats</span>) =&gt;</span> &#123;</span><br><span class="line">      <span class="built_in">console</span>.log(<span class="string">&#x27;Hello World!&#x27;</span>);</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = HelloWorldPlugin;</span><br></pre></td></tr></table></figure>
+
+<h3 id="实现一个html-webpack-plugin"><a href="#实现一个html-webpack-plugin" class="headerlink" title="实现一个html-webpack-plugin"></a>实现一个html-webpack-plugin</h3><p>使用html-webpack-plugin非常简单，而且功能非常好用，可以将指定的html模板复制一份输出到dist目录下，同时会自动引入bundle.js</p>
+<p>如何自己实现？</p>
+<ol>
+<li>编写一个自定义插件，注册<code>afterEmit</code>钩子</li>
+<li>根据创建对象时传入的template属性来读取html模板</li>
+<li>使用工具分析HTML，推荐使用cheerio，可以直接使用jQuery api</li>
+<li>循环遍历webpack打包的资源文件列表，如果有多个bundle就都打包进去（可以根据需求自己修改，因为可能有chunk，一般只引入第一个即可）</li>
+<li>输出新生成的HTML字符串到dist目录中</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">const</span> path = <span class="built_in">require</span>(<span class="string">&#x27;path&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> fs = <span class="built_in">require</span>(<span class="string">&#x27;fs&#x27;</span>)</span><br><span class="line"><span class="keyword">const</span> cheerio = <span class="built_in">require</span>(<span class="string">&#x27;cheerio&#x27;</span>)</span><br><span class="line"><span class="built_in">module</span>.exports = <span class="class"><span class="keyword">class</span> <span class="title">HTMLPlugin</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="title">constructor</span>(<span class="params">options</span>)</span> &#123;</span><br><span class="line">    <span class="comment">// 传入filename和template</span></span><br><span class="line">    <span class="built_in">this</span>.options = options</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="title">apply</span>(<span class="params">compiler</span>)</span> &#123;</span><br><span class="line">    compiler.hooks.afterEmit.tap(<span class="string">&#x27;HTMLPlugin&#x27;</span>, <span class="function"><span class="params">compilation</span> =&gt;</span> &#123;</span><br><span class="line">      <span class="comment">// 根据模板读取html文件内容</span></span><br><span class="line">      <span class="keyword">let</span> result = fs.readFileSync(<span class="built_in">this</span>.options.template, <span class="string">&#x27;utf-8&#x27;</span>)</span><br><span class="line">      <span class="comment">// 使用cheerio来分析HTML</span></span><br><span class="line">      <span class="keyword">let</span> $ = cheerio.load(result)</span><br><span class="line">      <span class="comment">// 创建script标签后插入HTML中</span></span><br><span class="line">      <span class="built_in">Object</span>.keys(compilation.assets).forEach(<span class="function"><span class="params">item</span> =&gt;</span> $(<span class="string">`&lt;script src=&quot;<span class="subst">$&#123;item&#125;</span>&quot;&gt;&lt;/script&gt;`</span>).appendTo(<span class="string">&#x27;body&#x27;</span>))</span><br><span class="line">      <span class="comment">// 转换成新的HTML并写入到dist目录中</span></span><br><span class="line">      fs.writeFileSync(path.join(process.cwd(), <span class="string">&#x27;dist&#x27;</span>, <span class="built_in">this</span>.options.filename), $.html())</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><strong>Compiler和Compilation的区别</strong></p>
+<ul>
+<li><strong>compiler 对象表示不变的webpack环境，是针对webpack的</strong></li>
+<li><strong>compilation 对象针对的是随时可变的项目文件，只要文件有改动，compilation就会被重新创建。</strong></li>
+</ul>
+<h3 id="在modest-pack中添加plugin的功能"><a href="#在modest-pack中添加plugin的功能" class="headerlink" title="在modest-pack中添加plugin的功能"></a>在modest-pack中添加plugin的功能</h3><h4 id="tapable简介"><a href="#tapable简介" class="headerlink" title="tapable简介"></a>tapable简介</h4><p>在webpack内部实现事件流机制的核心就在于<strong>tapable</strong>，有了它就可以通过事件流的形式，将各个插件串联起来，tapable类似于node中的events库，核心原理也是<strong>发布订阅模式</strong></p>
+<p>基本用法如下</p>
+<ol>
+<li>定义钩子</li>
+<li>使用者注册事件</li>
+<li>在合适的阶段调用钩子，触发事件</li>
+</ol>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="keyword">let</span> &#123; SyncHook &#125; = <span class="built_in">require</span>(<span class="string">&#x27;tapable&#x27;</span>)</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Lesson</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="title">constructor</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="built_in">this</span>.hooks = &#123;</span><br><span class="line">      <span class="attr">html</span>: <span class="keyword">new</span> SyncHook([<span class="string">&#x27;name&#x27;</span>]),</span><br><span class="line">      <span class="attr">css</span>: <span class="keyword">new</span> SyncHook([<span class="string">&#x27;name&#x27;</span>]),</span><br><span class="line">      <span class="attr">js</span>: <span class="keyword">new</span> SyncHook([<span class="string">&#x27;name&#x27;</span>]),</span><br><span class="line">      <span class="attr">react</span>: <span class="keyword">new</span> SyncHook([<span class="string">&#x27;name&#x27;</span>]),</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="function"><span class="title">study</span>(<span class="params"></span>)</span> &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;开班啦，同学们好！&#x27;</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;开始学html啦，同学们好！&#x27;</span>)</span><br><span class="line">    <span class="built_in">this</span>.hooks.html.call(<span class="string">&#x27;小明&#x27;</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;开始学css啦，同学们好！&#x27;</span>)</span><br><span class="line">    <span class="built_in">this</span>.hooks.css.call(<span class="string">&#x27;小花&#x27;</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;开始学js啦，同学们好！&#x27;</span>)</span><br><span class="line">    <span class="built_in">this</span>.hooks.js.call(<span class="string">&#x27;小黑&#x27;</span>)</span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">&#x27;开始学react啦，同学们好！&#x27;</span>)</span><br><span class="line">    <span class="built_in">this</span>.hooks.react.call(<span class="string">&#x27;紫阳&#x27;</span>)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">let</span> l = <span class="keyword">new</span> Lesson()</span><br><span class="line">l.hooks.html.tap(<span class="string">&#x27;html&#x27;</span>, <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;我要写个淘宝！！！挣他一个亿！&#x27;</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">l.hooks.react.tap(<span class="string">&#x27;react&#x27;</span>, <span class="function">(<span class="params">name</span>) =&gt;</span> &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;我要用react构建一个属于自己的王国！&#x27;</span> + name + <span class="string">&#x27;老师讲的真好！！！&#x27;</span>)</span><br><span class="line">&#125;)</span><br><span class="line">l.study()</span><br></pre></td></tr></table></figure>
+
+<p>通过该案例可以看出，如果需要在学习的不同阶段，做出不同的事情，可以通过发布订阅模式来完成。而tapable可以帮我们很方便的实现发布订阅模式，同时还可以在调用时传入参数。</p>
+<p>以上只是最基础的同步钩子演示，如果感兴趣，可以查阅官方文档，并练习对应的其他钩子，以下是tapable对外暴露的所有钩子：</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="built_in">exports</span>.Tapable = <span class="built_in">require</span>(<span class="string">&quot;./Tapable&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.SyncHook = <span class="built_in">require</span>(<span class="string">&quot;./SyncHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.SyncBailHook = <span class="built_in">require</span>(<span class="string">&quot;./SyncBailHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.SyncWaterfallHook = <span class="built_in">require</span>(<span class="string">&quot;./SyncWaterfallHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.SyncLoopHook = <span class="built_in">require</span>(<span class="string">&quot;./SyncLoopHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.AsyncParallelHook = <span class="built_in">require</span>(<span class="string">&quot;./AsyncParallelHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.AsyncParallelBailHook = <span class="built_in">require</span>(<span class="string">&quot;./AsyncParallelBailHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.AsyncSeriesHook = <span class="built_in">require</span>(<span class="string">&quot;./AsyncSeriesHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.AsyncSeriesBailHook = <span class="built_in">require</span>(<span class="string">&quot;./AsyncSeriesBailHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.AsyncSeriesWaterfallHook = <span class="built_in">require</span>(<span class="string">&quot;./AsyncSeriesWaterfallHook&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.HookMap = <span class="built_in">require</span>(<span class="string">&quot;./HookMap&quot;</span>);</span><br><span class="line"><span class="built_in">exports</span>.MultiHook = <span class="built_in">require</span>(<span class="string">&quot;./MultiHook&quot;</span>);</span><br></pre></td></tr></table></figure>
+
+<h4 id="利用tapable实现modest-pack的plugin功能"><a href="#利用tapable实现modest-pack的plugin功能" class="headerlink" title="利用tapable实现modest-pack的plugin功能"></a>利用tapable实现modest-pack的plugin功能</h4><p>在Compiler构造时，创建对应的钩子即可</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="comment">// Compiler的构造函数内部定义钩子</span></span><br><span class="line"><span class="built_in">this</span>.hooks = &#123;</span><br><span class="line">     <span class="attr">afterPlugins</span>: <span class="keyword">new</span> SyncHook(),</span><br><span class="line">     <span class="attr">beforeRun</span>: <span class="keyword">new</span> SyncHook(),</span><br><span class="line">     <span class="attr">run</span>: <span class="keyword">new</span> SyncHook(),</span><br><span class="line">     <span class="attr">make</span>: <span class="keyword">new</span> SyncHook(),</span><br><span class="line">     <span class="attr">afterCompile</span>: <span class="keyword">new</span> SyncHook(),</span><br><span class="line">     <span class="attr">shouldEmit</span>: <span class="keyword">new</span> SyncHook(),</span><br><span class="line">     <span class="attr">emit</span>: <span class="keyword">new</span> SyncHook(),</span><br><span class="line">     <span class="attr">afterEmit</span>: <span class="keyword">new</span> SyncHook([<span class="string">&#x27;compilation&#x27;</span>]),</span><br><span class="line">     <span class="attr">done</span>: <span class="keyword">new</span> SyncHook(),</span><br><span class="line">   &#125;</span><br><span class="line"></span><br><span class="line">   <span class="comment">// 触发所有插件的apply方法，并传入Compiler对象</span></span><br><span class="line">   <span class="keyword">if</span> (<span class="built_in">Array</span>.isArray(<span class="built_in">this</span>.config.plugins)) &#123;</span><br><span class="line">     <span class="built_in">this</span>.config.plugins.forEach(<span class="function"><span class="params">plugin</span> =&gt;</span> &#123;</span><br><span class="line">       plugin.apply(<span class="built_in">this</span>)</span><br><span class="line">     &#125;)</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+<p>在合适的时机调用对应钩子的call方法即可，如需传入参数，可以在对应的钩子中定义好需要传入的参数，call时直接传入</p>
+<p><img src="../../../../assets/webpack%E7%B3%BB%E5%88%97/1561895540321.png" alt="1561895540321"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><ul>
+<li>webpack基础配置<ul>
+<li>安装：本地安装即可，无需全局安装</li>
+<li>使用：CLI的方式或配置脚本使用配置文件</li>
+<li>配置：<ul>
+<li>开发时工具：watch、dev-server、webpack-dev-middleware、sourceMap</li>
+<li>loaders：css-loader、style-loader、less-loader、sass-loader、url-loader、babel-loader、</li>
+<li>plugins：html-webpack-plugin、clean-webpack-plugin、copy-webpack-plugin、BannerPlugin</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>webpack高级配置<ul>
+<li>img标签资源处理</li>
+<li>多页应用打包</li>
+<li>第三方库的引入方式</li>
+<li>区分配置文件打包</li>
+<li>环境变量</li>
+<li>proxy</li>
+<li>HMR</li>
+</ul>
+</li>
+<li>webpack性能优化<ul>
+<li>webpack自带优化详解</li>
+<li>css优化<ul>
+<li>提取到单独文件</li>
+<li>自动添加前缀</li>
+<li>压缩注意事项</li>
+</ul>
+</li>
+<li>js优化<ul>
+<li>代码分离：手动配置多入口、抽取公共代码、懒加载、SplitChunksPlugin参数详解</li>
+<li>noParse</li>
+<li>IgnorePlugin</li>
+<li>DllPlugin：将固定库抽取成动态链接库节省资源</li>
+</ul>
+</li>
+<li>多进程打包</li>
+<li>浏览器缓存</li>
+<li>打包分析</li>
+<li>Prefetching</li>
+</ul>
+</li>
+<li>webpack原理<ul>
+<li>分析bundle文件</li>
+<li>手写基础的webpack</li>
+<li>利用AST完成代码转译</li>
+<li>手写loader并给自己的webpack添加loader功能</li>
+<li>webpack中tapable的应用</li>
+<li>手写plugin并给自己的webpack添加plugin功能</li>
+</ul>
+</li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">mr liu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/02/10/webpack%E5%8E%9F%E7%90%86/">http://example.com/2022/02/10/webpack%E5%8E%9F%E7%90%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">liu's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/webpack/">webpack</a><a class="post-meta__tags" href="/tags/%E6%89%93%E5%8C%85/">打包</a><a class="post-meta__tags" href="/tags/%E5%89%8D%E7%AB%AF/">前端</a></div><div class="post_share"><div class="social-share" data-image="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/02/09/webpack%E4%BC%98%E5%8C%96/"><img class="next-cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E4%BC%98%E5%8C%96.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">(三) webpack优化</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/02/09/webpack%E4%BC%98%E5%8C%96/" title="(三) webpack优化"><img class="cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E4%BC%98%E5%8C%96.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-02-09</div><div class="title">(三) webpack优化</div></div></a></div><div><a href="/2022/02/08/webpack%E5%9F%BA%E7%A1%80/" title="(一) webpack基础"><img class="cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%9F%BA%E7%A1%80.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-02-08</div><div class="title">(一) webpack基础</div></div></a></div><div><a href="/2022/02/09/webpack%E9%AB%98%E7%BA%A7%E9%85%8D%E7%BD%AE/" title="(二) webpack高级配置"><img class="cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E9%AB%98%E7%BA%A7.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-02-09</div><div class="title">(二) webpack高级配置</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="http://img.mp.itc.cn/upload/20170808/5861bc790e654d56bc9289c567b44875_th.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">mr liu</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">4</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">3</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">1</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#webpack%E5%85%A5%E9%97%A8%E5%88%B0%E8%BF%9B%E9%98%B6%E7%B3%BB%E5%88%97"><span class="toc-number">1.</span> <span class="toc-text">webpack入门到进阶系列</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B-webpack%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">(四)webpack原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E7%9B%AE%E6%A0%87"><span class="toc-number">2.1.</span> <span class="toc-text">学习目标</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E9%A1%B9%E7%9B%AE%E5%87%86%E5%A4%87%E5%B7%A5%E4%BD%9C"><span class="toc-number">2.2.</span> <span class="toc-text">项目准备工作</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%86%E6%9E%90webpack%E6%89%93%E5%8C%85%E7%9A%84bundle%E6%96%87%E4%BB%B6"><span class="toc-number">2.3.</span> <span class="toc-text">分析webpack打包的bundle文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89loader"><span class="toc-number">2.4.</span> <span class="toc-text">自定义loader</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E7%9B%AE%E6%A0%87-1"><span class="toc-number">2.4.1.</span> <span class="toc-text">学习目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84loader"><span class="toc-number">2.4.2.</span> <span class="toc-text">实现一个简单的loader</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#loader%E7%9A%84%E5%88%86%E7%B1%BB"><span class="toc-number">2.4.3.</span> <span class="toc-text">loader的分类</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8modest-pack%E4%B8%AD%E6%B7%BB%E5%8A%A0loader%E7%9A%84%E5%8A%9F%E8%83%BD"><span class="toc-number">2.4.4.</span> <span class="toc-text">在modest-pack中添加loader的功能</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E6%8F%92%E4%BB%B6"><span class="toc-number">2.5.</span> <span class="toc-text">自定义插件</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%A6%E4%B9%A0%E7%9B%AE%E6%A0%87-2"><span class="toc-number">2.5.1.</span> <span class="toc-text">学习目标</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#webpack%E6%8F%92%E4%BB%B6%E7%9A%84%E7%BB%84%E6%88%90"><span class="toc-number">2.5.2.</span> <span class="toc-text">webpack插件的组成</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#webpack%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E9%92%A9%E5%AD%90"><span class="toc-number">2.5.3.</span> <span class="toc-text">webpack的生命周期钩子</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84plugin"><span class="toc-number">2.5.4.</span> <span class="toc-text">实现一个简单的plugin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9E%E7%8E%B0%E4%B8%80%E4%B8%AAhtml-webpack-plugin"><span class="toc-number">2.5.5.</span> <span class="toc-text">实现一个html-webpack-plugin</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%A8modest-pack%E4%B8%AD%E6%B7%BB%E5%8A%A0plugin%E7%9A%84%E5%8A%9F%E8%83%BD"><span class="toc-number">2.5.6.</span> <span class="toc-text">在modest-pack中添加plugin的功能</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#tapable%E7%AE%80%E4%BB%8B"><span class="toc-number">2.5.6.1.</span> <span class="toc-text">tapable简介</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%88%A9%E7%94%A8tapable%E5%AE%9E%E7%8E%B0modest-pack%E7%9A%84plugin%E5%8A%9F%E8%83%BD"><span class="toc-number">2.5.6.2.</span> <span class="toc-text">利用tapable实现modest-pack的plugin功能</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%80%BB%E7%BB%93"><span class="toc-number">3.</span> <span class="toc-text">总结</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/02/10/webpack%E5%8E%9F%E7%90%86/" title="(四) webpack原理"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(四) webpack原理"/></a><div class="content"><a class="title" href="/2022/02/10/webpack%E5%8E%9F%E7%90%86/" title="(四) webpack原理">(四) webpack原理</a><time datetime="2022-02-10T13:17:13.000Z" title="发表于 2022-02-10 21:17:13">2022-02-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/09/webpack%E4%BC%98%E5%8C%96/" title="(三) webpack优化"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E4%BC%98%E5%8C%96.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(三) webpack优化"/></a><div class="content"><a class="title" href="/2022/02/09/webpack%E4%BC%98%E5%8C%96/" title="(三) webpack优化">(三) webpack优化</a><time datetime="2022-02-09T06:22:24.000Z" title="发表于 2022-02-09 14:22:24">2022-02-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/09/webpack%E9%AB%98%E7%BA%A7%E9%85%8D%E7%BD%AE/" title="(二) webpack高级配置"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E9%AB%98%E7%BA%A7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(二) webpack高级配置"/></a><div class="content"><a class="title" href="/2022/02/09/webpack%E9%AB%98%E7%BA%A7%E9%85%8D%E7%BD%AE/" title="(二) webpack高级配置">(二) webpack高级配置</a><time datetime="2022-02-09T03:11:51.000Z" title="发表于 2022-02-09 11:11:51">2022-02-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/08/webpack%E5%9F%BA%E7%A1%80/" title="(一) webpack基础"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%9F%BA%E7%A1%80.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(一) webpack基础"/></a><div class="content"><a class="title" href="/2022/02/08/webpack%E5%9F%BA%E7%A1%80/" title="(一) webpack基础">(一) webpack基础</a><time datetime="2022-02-08T09:20:20.000Z" title="发表于 2022-02-08 17:20:20">2022-02-08</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By mr liu</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">欢迎来到我的博客!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
