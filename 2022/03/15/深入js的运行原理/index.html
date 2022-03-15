@@ -1,0 +1,354 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>深入js的运行原理 | liu's blog</title><meta name="keywords" content="js高级,浏览器原理,js执行原理"><meta name="author" content="mr liu"><meta name="copyright" content="mr liu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="JavaScript是一门编程语言JavaScript是一门高级的编程语言。  那么有高级编程语言，就有低级编程语言，从编程语言发展历史来说，可以划分为三个阶段：   p机器语言：1000100111011000，一些机器指令；  p汇编语言：mov ax,bx，一些汇编指令；  p高级语言：C、C++、Java、JavaScript、Python；    但是计算机它本身是不认识这些高级语言的，">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入js的运行原理">
+<meta property="og:url" content="http://example.com/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/index.html">
+<meta property="og:site_name" content="liu&#39;s blog">
+<meta property="og:description" content="JavaScript是一门编程语言JavaScript是一门高级的编程语言。  那么有高级编程语言，就有低级编程语言，从编程语言发展历史来说，可以划分为三个阶段：   p机器语言：1000100111011000，一些机器指令；  p汇编语言：mov ax,bx，一些汇编指令；  p高级语言：C、C++、Java、JavaScript、Python；    但是计算机它本身是不认识这些高级语言的，">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86.webp">
+<meta property="article:published_time" content="2022-03-15T08:51:04.000Z">
+<meta property="article:modified_time" content="2022-03-15T10:26:55.182Z">
+<meta property="article:author" content="mr liu">
+<meta property="article:tag" content="js高级">
+<meta property="article:tag" content="浏览器原理">
+<meta property="article:tag" content="js执行原理">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86.webp"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: '深入js的运行原理',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-03-15 18:26:55'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="http://img.mp.itc.cn/upload/20170808/5861bc790e654d56bc9289c567b44875_th.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">6</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86.webp')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">liu's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">深入js的运行原理</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-03-15T08:51:04.000Z" title="发表于 2022-03-15 16:51:04">2022-03-15</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-03-15T10:26:55.182Z" title="更新于 2022-03-15 18:26:55">2022-03-15</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/js%E9%AB%98%E7%BA%A7/">js高级</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="深入js的运行原理"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="JavaScript是一门编程语言"><a href="#JavaScript是一门编程语言" class="headerlink" title="JavaScript是一门编程语言"></a>JavaScript是一门编程语言</h1><p><strong>JavaScript是一门高级的编程语言。</strong></p>
+<ul>
+<li><p>那么有高级编程语言，就有低级编程语言，从编程语言发展历史来说，可以划分为三个阶段： </p>
+<ul>
+<li>p机器语言：1000100111011000，一些机器指令； </li>
+<li>p汇编语言：mov ax,bx，一些汇编指令； </li>
+<li>p高级语言：C、C++、Java、JavaScript、Python；</li>
+</ul>
+</li>
+<li><p> 但是计算机它本身是不认识这些高级语言的，所以我们的代码最终还是需要被转换成机器指令：</p>
+</li>
+</ul>
+<p>  <img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315165833.jpg"></p>
+<h1 id="浏览器的运行原理"><a href="#浏览器的运行原理" class="headerlink" title="浏览器的运行原理"></a>浏览器的运行原理</h1><p>让我们想想浏览器是如何将页面呈现在我们面前的？</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315170408.jpg"></p>
+<h2 id="认识浏览器的内核"><a href="#认识浏览器的内核" class="headerlink" title="认识浏览器的内核"></a>认识浏览器的内核</h2><ul>
+<li><p>我们经常会说：<strong>不同的浏览器有不同的内核组成</strong></p>
+<ul>
+<li><strong>Gecko</strong>：早期被Netscape和Mozilla Firefox浏览器浏览器使用；</li>
+<li><strong>Trident</strong>：微软开发，被IE4~IE11浏览器使用，但是Edge浏览器已经转向Blink； </li>
+<li><strong>Webkit</strong>：苹果基于KHTML开发、开源的，用于Safari，Google Chrome之前也在使用；</li>
+<li><strong>Blink</strong>：是Webkit的一个分支，Google开发，目前应用于Google Chrome、Edge、Opera等；</li>
+<li>等等…</li>
+</ul>
+</li>
+<li><p>事实上，我们经常说的浏览器内核指的是浏览器的排版引擎： </p>
+<ul>
+<li><strong>排版引擎</strong>（layout engine），也称为<strong>浏览器引擎</strong>（browser engine）、<strong>页面渲染引擎</strong>（rendering engine）或<strong>样版引擎</strong>。</li>
+</ul>
+</li>
+</ul>
+<h2 id="浏览器的渲染过程"><a href="#浏览器的渲染过程" class="headerlink" title="浏览器的渲染过程"></a>浏览器的渲染过程</h2><p>但是在这个执行过程中，HTML解析的时候遇到了JavaScript标签，应该怎么办呢？</p>
+<p>浏览器会停止解析HTML，而去加载和执行JavaScript代码；</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315171019.jpg"></p>
+<h2 id="认识JavaScript引擎"><a href="#认识JavaScript引擎" class="headerlink" title="认识JavaScript引擎"></a>认识JavaScript引擎</h2><p>当浏览器在上面渲染的过程中时，遇到了JavaScript代码，然后又是由谁来执行的呢？答案是：JavaScript引擎</p>
+<p><strong>为什么需要JavaScript引擎呢？</strong></p>
+<ul>
+<li>我们前面说过，高级的编程语言都是需要转成最终的机器指令来执行的；</li>
+<li>事实上我们编写的JavaScript无论你交给浏览器或者Node执行，最后都是需要被CPU执行的；</li>
+<li>但是CPU只认识自己的指令集，实际上是机器语言，才能被CPU所执行；</li>
+<li>所以我们需要JavaScript引擎帮助我们将JavaScript代码翻译成CPU指令来执行；</li>
+</ul>
+<p><strong>比较常见的JavaScript引擎有哪些呢？</strong></p>
+<ul>
+<li><strong>SpiderMonkey</strong>：第一款JavaScript引擎，由Brendan Eich开发（也就是JavaScript作者）；</li>
+<li><strong>Chakra</strong>：微软开发，用于IT浏览器； </li>
+<li><strong>JavaScriptCore</strong>：WebKit中的JavaScript引擎，Apple公司开发；</li>
+<li><strong>V8</strong>：Google开发的强大JavaScript引擎，也帮助Chrome从众多浏览器中脱颖而出；</li>
+<li>等等…</li>
+</ul>
+<h3 id="浏览器内核和js引擎的关系"><a href="#浏览器内核和js引擎的关系" class="headerlink" title="浏览器内核和js引擎的关系"></a>浏览器内核和js引擎的关系</h3><p>这里我们先以WebKit为例，WebKit事实上由两部分组成的：</p>
+<ul>
+<li><p><strong>WebCore：</strong>负责HTML解析、布局、渲染等等相关的工作；</p>
+</li>
+<li><p><strong>JavaScriptCore：</strong>解析、执行JavaScript代码； </p>
+</li>
+</ul>
+<p>所以说，浏览器内核是包含js引擎的，它不仅有js引擎，还有负责解析渲染HTML、CSS的渲染引擎</p>
+<h3 id="V8引擎"><a href="#V8引擎" class="headerlink" title="V8引擎"></a>V8引擎</h3><p>另一个强大的js引擎当然就是大名鼎鼎的V8引擎了</p>
+<p>我们来看一下官方对==V8引擎的定义：== </p>
+<ul>
+<li>V8是用C ++编写的Google开源高性能JavaScript和WebAssembly引擎，它用于Chrome和Node.js等。</li>
+<li>它实现ECMAScript和WebAssembly，并在Windows 7或更高版本，macOS 10.12+和使用x64，IA-32，ARM或MIPS处理器的Linux系统上运行。</li>
+<li>V8可以独立运行，也可以嵌入到任何C ++应用程序中</li>
+</ul>
+<h3 id="V8引擎的架构"><a href="#V8引擎的架构" class="headerlink" title="V8引擎的架构"></a>V8引擎的架构</h3><p>V8引擎本身的源码<strong>非常复杂</strong>，大概有超过<strong>100w行C++代码</strong>，通过了解它的架构，我们可以知道它是如何对JavaScript执行的：</p>
+<ul>
+<li><p>Parse模块会将JavaScript代码转换成AST（抽象语法树），这是因为解释器并不直接认识JavaScript代码；</p>
+<ul>
+<li>如果函数没有被调用，那么是不会被转换成AST的；</li>
+<li>Parse的V8官方文档：<a target="_blank" rel="noopener" href="https://v8.dev/blog/scanner">https://v8.dev/blog/scanner</a></li>
+</ul>
+</li>
+<li><p>Ignition是一个解释器，会将AST转换成ByteCode（字节码）</p>
+<ul>
+<li>同时会收集TurboFan优化所需要的信息（比如函数参数的类型信息，有了类型才能进行真实的运算）；</li>
+<li>如果函数只调用一次，Ignition会执行解释执行ByteCode；</li>
+<li>Ignition的V8官方文档：<a target="_blank" rel="noopener" href="https://v8.dev/blog/ignition-interpreter">https://v8.dev/blog/ignition-interpreter</a></li>
+</ul>
+</li>
+<li><p>TurboFan是一个编译器，可以将字节码编译为CPU可以直接执行的机器码；</p>
+<ul>
+<li>如果一个函数被多次调用，那么就会被标记为热点函数，那么就会经过TurboFan转换成优化的机器码，提高代码的执行性能；</li>
+<li>但是，机器码实际上也会被还原为ByteCode，这是因为如果后续执行函数的过程中，类型发生了变化（比如sum函数原来执行的是number类型，后来执行变成了string类型），之前优化的机器码并不能正确的处理运算，就会逆向的转换成字节码；</li>
+<li>TurboFan的V8官方文档：<a target="_blank" rel="noopener" href="https://v8.dev/blog/turbofan-jit">https://v8.dev/blog/turbofan-jit</a></li>
+</ul>
+</li>
+</ul>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315172915.jpg"></p>
+<p>下面是V8引擎的官方解析图：</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315173011.jpg"></p>
+<p><strong>上面这幅官方图V8引擎执行的细节</strong>：</p>
+<p><strong>那么我们的JavaScript源码是如何被解析（Parse过程）的呢？</strong></p>
+<ul>
+<li><p>Blink将源码交给V8引擎，Stream获取到源码并且进行编码转换；</p>
+</li>
+<li><p>Scanner会进行词法分析（lexical analysis），词法分析会将代码转换成tokens； </p>
+</li>
+<li><p>接下来tokens会被转换成AST树，经过Parser和PreParser： </p>
+<ul>
+<li>Parser就是直接将tokens转成AST树架构；</li>
+<li>PreParser称之为预解析，为什么需要预解析呢？<ul>
+<li>这是因为并不是所有的JavaScript代码，在一开始时就会被执行。那么对所有的JavaScript代码进行解析，必然会影响网页的运行效率；</li>
+<li>所以V8引擎就实现了Lazy Parsing（延迟解析）的方案，它的作用是将不必要的函数进行预解析，也就是只解析暂时需要的内容，而对函数的全量解析是在函数被调用时才会进行；</li>
+<li>比如我们在一个函数outer内部定义了另外一个函数inner，那么inner函数就会进行预解析；</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>生成AST树后，会被Ignition转成字节码（bytecode），之后的过程就是代码的执行过程（后续会详细分析）。</p>
+</li>
+</ul>
+<h2 id="JavaScript的执行过程"><a href="#JavaScript的执行过程" class="headerlink" title="JavaScript的执行过程"></a>JavaScript的执行过程</h2><h3 id="初始化全局对象"><a href="#初始化全局对象" class="headerlink" title="初始化全局对象"></a>初始化全局对象</h3><ul>
+<li><p>js引擎会在执行代码之前，会在堆内存中创建一个全局对象：Global Object（GO） </p>
+<ul>
+<li>该对象 所有的作用域（scope）都可以访问； </li>
+<li>里面会包含Date、Array、String、Number、setTimeout、setInterval等等；</li>
+<li>其中还有一个window属性指向自己</li>
+</ul>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315173801.jpg"></p>
+</li>
+</ul>
+<h3 id="执行上下文栈（调用栈）"><a href="#执行上下文栈（调用栈）" class="headerlink" title="执行上下文栈（调用栈）"></a>执行上下文栈（调用栈）</h3><ul>
+<li><p>js引擎内部有一个<strong>执行上下文栈（Execution Context Stack，简称ECS）</strong>，它是用于执行<strong>代码的调用栈</strong>。 </p>
+</li>
+<li><p>那么现在它要执行谁呢？执行的是<strong>全局的代码块</strong>： </p>
+<ul>
+<li>全局的代码块为了执行会构建一个 <strong>Global Execution Context（GEC）</strong>； </li>
+<li>GEC会 被放入到ECS中 执行；</li>
+</ul>
+</li>
+<li><p><strong>GEC被放入到ECS中里面包含两部分内容：</strong></p>
+<ul>
+<li><strong>第一部分：</strong>在代码执行前，在parser转成AST的过程中，会将全局定义的变量、函数等加入到GlobalObject中，但是并不会赋值； 这个过程也称之为变量的作用域提升（hoisting） </li>
+<li><strong>第二部分：</strong>在代码执行中，对变量赋值，或者执行其他的函数；</li>
+</ul>
+</li>
+</ul>
+<h4 id="GEC被放入到ECS中"><a href="#GEC被放入到ECS中" class="headerlink" title="GEC被放入到ECS中"></a>GEC被放入到ECS中</h4><p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315175124.jpg"></p>
+<h4 id="GEC开始执行代码"><a href="#GEC开始执行代码" class="headerlink" title="GEC开始执行代码"></a>GEC开始执行代码</h4><p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315175254.jpg"></p>
+<h3 id="遇到函数如何执行"><a href="#遇到函数如何执行" class="headerlink" title="遇到函数如何执行"></a>遇到函数如何执行</h3><ul>
+<li>在执行的过程中<strong>执行到一个函数时</strong>，就会根据<strong>函数体</strong>创建一个<strong>函数执行上下文（Functional Execution Context，</strong></li>
+</ul>
+<p><strong>简称FEC）</strong>，并且压入到<strong>EC Stack</strong>中。 </p>
+<ul>
+<li>FEC中包含三部分内容：<ul>
+<li>第一部分：在解析函数成为AST树结构时，会创建一个Activation Object（AO）：<ul>
+<li>AO中包含形参、arguments、函数定义和指向函数对象、定义的变量；</li>
+</ul>
+</li>
+<li>第二部分：作用域链：由VO（在函数中就是AO对象）和父级VO组成，查找时会一层层查找； </li>
+<li>第三部分：this绑定的值：这个我们后续会详细解析</li>
+</ul>
+</li>
+</ul>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315175716.jpg"></p>
+<h4 id="FEC被放到ECS中"><a href="#FEC被放到ECS中" class="headerlink" title="FEC被放到ECS中"></a>FEC被放到ECS中</h4><p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315180104.jpg"></p>
+<h4 id="FEC开始执行代码"><a href="#FEC开始执行代码" class="headerlink" title="FEC开始执行代码"></a>FEC开始执行代码</h4><p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315180209.jpg"></p>
+<h1 id="变量环境和记录"><a href="#变量环境和记录" class="headerlink" title="变量环境和记录"></a>变量环境和记录</h1><p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315180357.jpg"></p>
+<h1 id="作用域面试题"><a href="#作用域面试题" class="headerlink" title="作用域面试题"></a>作用域面试题</h1><p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220315180657.jpg"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">mr liu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/">http://example.com/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">liu's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/js%E9%AB%98%E7%BA%A7/">js高级</a><a class="post-meta__tags" href="/tags/%E6%B5%8F%E8%A7%88%E5%99%A8%E5%8E%9F%E7%90%86/">浏览器原理</a><a class="post-meta__tags" href="/tags/js%E6%89%A7%E8%A1%8C%E5%8E%9F%E7%90%86/">js执行原理</a></div><div class="post_share"><div class="social-share" data-image="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86.webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/02/10/webpack%E5%8E%9F%E7%90%86/"><img class="next-cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">(四) webpack原理</div></div></a></div></nav><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="http://img.mp.itc.cn/upload/20170808/5861bc790e654d56bc9289c567b44875_th.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">mr liu</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">5</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">6</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#JavaScript%E6%98%AF%E4%B8%80%E9%97%A8%E7%BC%96%E7%A8%8B%E8%AF%AD%E8%A8%80"><span class="toc-number">1.</span> <span class="toc-text">JavaScript是一门编程语言</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86"><span class="toc-number">2.</span> <span class="toc-text">浏览器的运行原理</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A4%E8%AF%86%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E5%86%85%E6%A0%B8"><span class="toc-number">2.1.</span> <span class="toc-text">认识浏览器的内核</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84%E6%B8%B2%E6%9F%93%E8%BF%87%E7%A8%8B"><span class="toc-number">2.2.</span> <span class="toc-text">浏览器的渲染过程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A4%E8%AF%86JavaScript%E5%BC%95%E6%93%8E"><span class="toc-number">2.3.</span> <span class="toc-text">认识JavaScript引擎</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B5%8F%E8%A7%88%E5%99%A8%E5%86%85%E6%A0%B8%E5%92%8Cjs%E5%BC%95%E6%93%8E%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="toc-number">2.3.1.</span> <span class="toc-text">浏览器内核和js引擎的关系</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#V8%E5%BC%95%E6%93%8E"><span class="toc-number">2.3.2.</span> <span class="toc-text">V8引擎</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#V8%E5%BC%95%E6%93%8E%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="toc-number">2.3.3.</span> <span class="toc-text">V8引擎的架构</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#JavaScript%E7%9A%84%E6%89%A7%E8%A1%8C%E8%BF%87%E7%A8%8B"><span class="toc-number">2.4.</span> <span class="toc-text">JavaScript的执行过程</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E5%85%A8%E5%B1%80%E5%AF%B9%E8%B1%A1"><span class="toc-number">2.4.1.</span> <span class="toc-text">初始化全局对象</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%89%A7%E8%A1%8C%E4%B8%8A%E4%B8%8B%E6%96%87%E6%A0%88%EF%BC%88%E8%B0%83%E7%94%A8%E6%A0%88%EF%BC%89"><span class="toc-number">2.4.2.</span> <span class="toc-text">执行上下文栈（调用栈）</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#GEC%E8%A2%AB%E6%94%BE%E5%85%A5%E5%88%B0ECS%E4%B8%AD"><span class="toc-number">2.4.2.1.</span> <span class="toc-text">GEC被放入到ECS中</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#GEC%E5%BC%80%E5%A7%8B%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81"><span class="toc-number">2.4.2.2.</span> <span class="toc-text">GEC开始执行代码</span></a></li></ol></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E9%81%87%E5%88%B0%E5%87%BD%E6%95%B0%E5%A6%82%E4%BD%95%E6%89%A7%E8%A1%8C"><span class="toc-number">2.4.3.</span> <span class="toc-text">遇到函数如何执行</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#FEC%E8%A2%AB%E6%94%BE%E5%88%B0ECS%E4%B8%AD"><span class="toc-number">2.4.3.1.</span> <span class="toc-text">FEC被放到ECS中</span></a></li><li class="toc-item toc-level-4"><a class="toc-link" href="#FEC%E5%BC%80%E5%A7%8B%E6%89%A7%E8%A1%8C%E4%BB%A3%E7%A0%81"><span class="toc-number">2.4.3.2.</span> <span class="toc-text">FEC开始执行代码</span></a></li></ol></li></ol></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%8F%98%E9%87%8F%E7%8E%AF%E5%A2%83%E5%92%8C%E8%AE%B0%E5%BD%95"><span class="toc-number">3.</span> <span class="toc-text">变量环境和记录</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BD%9C%E7%94%A8%E5%9F%9F%E9%9D%A2%E8%AF%95%E9%A2%98"><span class="toc-number">4.</span> <span class="toc-text">作用域面试题</span></a></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/" title="深入js的运行原理"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入js的运行原理"/></a><div class="content"><a class="title" href="/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/" title="深入js的运行原理">深入js的运行原理</a><time datetime="2022-03-15T08:51:04.000Z" title="发表于 2022-03-15 16:51:04">2022-03-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/10/webpack%E5%8E%9F%E7%90%86/" title="(四) webpack原理"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(四) webpack原理"/></a><div class="content"><a class="title" href="/2022/02/10/webpack%E5%8E%9F%E7%90%86/" title="(四) webpack原理">(四) webpack原理</a><time datetime="2022-02-10T13:17:13.000Z" title="发表于 2022-02-10 21:17:13">2022-02-10</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/09/webpack%E4%BC%98%E5%8C%96/" title="(三) webpack优化"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E4%BC%98%E5%8C%96.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(三) webpack优化"/></a><div class="content"><a class="title" href="/2022/02/09/webpack%E4%BC%98%E5%8C%96/" title="(三) webpack优化">(三) webpack优化</a><time datetime="2022-02-09T06:22:24.000Z" title="发表于 2022-02-09 14:22:24">2022-02-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/09/webpack%E9%AB%98%E7%BA%A7%E9%85%8D%E7%BD%AE/" title="(二) webpack高级配置"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E9%AB%98%E7%BA%A7.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(二) webpack高级配置"/></a><div class="content"><a class="title" href="/2022/02/09/webpack%E9%AB%98%E7%BA%A7%E9%85%8D%E7%BD%AE/" title="(二) webpack高级配置">(二) webpack高级配置</a><time datetime="2022-02-09T03:11:51.000Z" title="发表于 2022-02-09 11:11:51">2022-02-09</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/08/webpack%E5%9F%BA%E7%A1%80/" title="(一) webpack基础"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%9F%BA%E7%A1%80.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(一) webpack基础"/></a><div class="content"><a class="title" href="/2022/02/08/webpack%E5%9F%BA%E7%A1%80/" title="(一) webpack基础">(一) webpack基础</a><time datetime="2022-02-08T09:20:20.000Z" title="发表于 2022-02-08 17:20:20">2022-02-08</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86.webp')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By mr liu</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">欢迎来到我的博客!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
