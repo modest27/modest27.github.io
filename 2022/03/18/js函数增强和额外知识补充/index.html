@@ -1,0 +1,392 @@
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1"><title>js函数增强和额外知识补充 | liu's blog</title><meta name="keywords" content="js高级,纯函数,柯里化,组合函数"><meta name="author" content="mr liu"><meta name="copyright" content="mr liu"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="一、认识argumentsarguments 是一个 对应于 传递给函数的参数 的 类数组(array-like)对象。   array-like意味着它不是一个数组类型，而是一个对象类型：  但是它却拥有数组的一些特性，比如说length，比如可以通过index索引来访问；  但是它却没有数组的一些方法，比如forEach、map等；   arguments转为array的几种方法 箭头函数不绑">
+<meta property="og:type" content="article">
+<meta property="og:title" content="js函数增强和额外知识补充">
+<meta property="og:url" content="http://example.com/2022/03/18/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85/index.html">
+<meta property="og:site_name" content="liu&#39;s blog">
+<meta property="og:description" content="一、认识argumentsarguments 是一个 对应于 传递给函数的参数 的 类数组(array-like)对象。   array-like意味着它不是一个数组类型，而是一个对象类型：  但是它却拥有数组的一些特性，比如说length，比如可以通过index索引来访问；  但是它却没有数组的一些方法，比如forEach、map等；   arguments转为array的几种方法 箭头函数不绑">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85.webp">
+<meta property="article:published_time" content="2022-03-18T04:30:14.000Z">
+<meta property="article:modified_time" content="2022-03-18T05:41:58.568Z">
+<meta property="article:author" content="mr liu">
+<meta property="article:tag" content="js高级">
+<meta property="article:tag" content="纯函数">
+<meta property="article:tag" content="柯里化">
+<meta property="article:tag" content="组合函数">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85.webp"><link rel="shortcut icon" href="/img/favicon.png"><link rel="canonical" href="http://example.com/2022/03/18/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85/"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><script>const GLOBAL_CONFIG = { 
+  root: '/',
+  algolia: undefined,
+  localSearch: undefined,
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: '复制成功',
+    error: '复制错误',
+    noSupport: '浏览器不支持'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  date_suffix: {
+    just: '刚刚',
+    min: '分钟前',
+    hour: '小时前',
+    day: '天前',
+    month: '个月前'
+  },
+  copyright: undefined,
+  lightbox: 'mediumZoom',
+  Snackbar: undefined,
+  source: {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@latest/dist/jquery.min.js',
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/js/jquery.justifiedGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/justifiedGallery/dist/css/justifiedGallery.min.css'
+    },
+    fancybox: {
+      js: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@latest/dist/jquery.fancybox.min.css'
+    }
+  },
+  isPhotoFigcaption: true,
+  islazyload: false,
+  isanchor: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'js函数增强和额外知识补充',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-03-18 13:41:58'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          if (t === 'dark') activateDarkMode()
+          else if (t === 'light') activateLightMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const fontSizeVal = saveToLocal.get('global-font-size')
+    if (fontSizeVal !== undefined) {
+      document.documentElement.style.setProperty('--global-font-size', fontSizeVal + 'px')
+    }
+    
+    const detectApple = () => {
+      if (GLOBAL_CONFIG_SITE.isHome && /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 5.4.0"></head><body><div id="web_bg"></div><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="http://img.mp.itc.cn/upload/20170808/5861bc790e654d56bc9289c567b44875_th.jpg" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="site-data"><div class="data-item is-center"><div class="data-item-link"><a href="/archives/"><div class="headline">文章</div><div class="length-num">8</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a></div></div><div class="data-item is-center"><div class="data-item-link"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div></div><hr/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85.webp')"><nav id="nav"><span id="blog_name"><a id="site-name" href="/">liu's blog</a></span><div id="menus"><div class="menus_items"><div class="menus_item"><a class="site-page" href="/"><i class="fa-fw fas fa-home"></i><span> 首页</span></a></div><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> 时间轴</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> 标签</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> 分类</span></a></div><div class="menus_item"><a class="site-page" href="javascript:void(0);"><i class="fa-fw fas fa-list"></i><span> 清单</span><i class="fas fa-chevron-down expand"></i></a><ul class="menus_item_child"><li><a class="site-page child" href="/music/"><i class="fa-fw fas fa-music"></i><span> 音乐</span></a></li><li><a class="site-page child" href="/movies/"><i class="fa-fw fas fa-video"></i><span> 电影</span></a></li></ul></div><div class="menus_item"><a class="site-page" href="/link/"><i class="fa-fw fas fa-link"></i><span> 友链</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> 关于</span></a></div></div><div id="toggle-menu"><a class="site-page"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">js函数增强和额外知识补充</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">发表于</span><time class="post-meta-date-created" datetime="2022-03-18T04:30:14.000Z" title="发表于 2022-03-18 12:30:14">2022-03-18</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">更新于</span><time class="post-meta-date-updated" datetime="2022-03-18T05:41:58.568Z" title="更新于 2022-03-18 13:41:58">2022-03-18</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/js%E9%AB%98%E7%BA%A7/">js高级</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-pv-cv" id="" data-flag-title="js函数增强和额外知识补充"><i class="far fa-eye fa-fw post-meta-icon"></i><span class="post-meta-label">阅读量:</span><span id="busuanzi_value_page_pv"></span></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><h1 id="一、认识arguments"><a href="#一、认识arguments" class="headerlink" title="一、认识arguments"></a>一、认识arguments</h1><p><strong>arguments</strong> 是一个 对应于 <strong>传递给函数的参数</strong> 的 <strong>类数组(array-like)对象</strong>。</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318123253.jpg"> </p>
+<p>array-like意味着它不是一个数组类型，而是一个对象类型：</p>
+<ul>
+<li><p>但是它却拥有数组的一些特性，比如说length，比如可以通过index索引来访问；</p>
+</li>
+<li><p>但是它却没有数组的一些方法，比如forEach、map等；</p>
+</li>
+</ul>
+<h2 id="arguments转为array的几种方法"><a href="#arguments转为array的几种方法" class="headerlink" title="arguments转为array的几种方法"></a>arguments转为array的几种方法</h2><p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318123515.jpg"></p>
+<h2 id="箭头函数不绑定arguments"><a href="#箭头函数不绑定arguments" class="headerlink" title="箭头函数不绑定arguments"></a>箭头函数不绑定arguments</h2><p>箭头函数是不绑定arguments的，所以我们在箭头函数中使用arguments会去上层作用域查找：</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318123733.jpg"></p>
+<h1 id="二、JavaScript纯函数"><a href="#二、JavaScript纯函数" class="headerlink" title="二、JavaScript纯函数"></a>二、JavaScript纯函数</h1><h2 id="什么是纯函数"><a href="#什么是纯函数" class="headerlink" title="什么是纯函数"></a>什么是纯函数</h2><ul>
+<li><p><strong>函数式编程</strong>中有一个非常重要的概念叫<strong>纯函数</strong>，JavaScript符合<strong>函数式编程的范式</strong>，所以也<strong>有纯函数的概念</strong>； </p>
+<ul>
+<li>在<strong>react开发中纯函数是被多次提及</strong>的；</li>
+<li>比如<strong>react中组件就被要求像是一个纯函数</strong>（为什么是像，因为还有class组件），<strong>redux中有一个reducer的概念</strong>，也是要求必须是一个纯函数；</li>
+<li>所以<strong>掌握纯函数对于理解很多框架的设计</strong>是非常有帮助的；</li>
+</ul>
+</li>
+<li><p><strong>纯函数的维基百科定义：</strong></p>
+</li>
+</ul>
+<blockquote>
+<ul>
+<li><p>在程序设计中，若一个函数符合以下条件，那么这个函数被称为纯函数：</p>
+</li>
+<li><p>此函数在<strong>相同的输入值时</strong>，需产生<strong>相同的输出</strong>。 </p>
+</li>
+<li><p>函数的<strong>输出和输入值以外的其他隐藏信息或状态无关</strong>，也和由<strong>I/O设备产生的外部输出无关</strong>。</p>
+</li>
+<li><p>该函数<strong>不能有语义上可观察的函数副作用</strong>，诸如<strong>“触发事件”，使输出设备输出，或更改输出值以外物件的内容等</strong>。</p>
+</li>
+</ul>
+</blockquote>
+<p><strong>当然上面的定义会过于的晦涩，所以我们可以简单总结一下：</strong></p>
+<ul>
+<li><p>确定的输入，一定会产生确定的输出； </p>
+</li>
+<li><p>函数在执行过程中，不能产生副作用；</p>
+</li>
+</ul>
+<h2 id="副作用的理解"><a href="#副作用的理解" class="headerlink" title="副作用的理解"></a>副作用的理解</h2><ul>
+<li><p><strong>那么这里又有一个概念，叫做副作用</strong>，什么又是<strong>副作用</strong>呢？</p>
+<ul>
+<li><strong>副作用（side effect）</strong>其实本身是医学的一个概念，比如我们经常说吃什么药本来是为了治病，可能会产生一些其他的副作用；</li>
+<li>在计算机科学中，也引用了副作用的概念，表示在执行一个函数时，<strong>除了返回函数值之外</strong>，还<strong>对调用函数产生了附加的影响</strong>，比如<strong>修改了全局变量，修改参数或者改变外部的存储</strong>； </li>
+</ul>
+</li>
+<li><p><strong>纯函数在执行的过程中就是不能产生这样的副作用：</strong></p>
+<ul>
+<li>副作用往往是产生<strong>bug的 “温床”</strong>。</li>
+</ul>
+</li>
+</ul>
+<h2 id="纯函数的案例"><a href="#纯函数的案例" class="headerlink" title="纯函数的案例"></a>纯函数的案例</h2><p><strong>让我们来看一个对数组操作的两个函数：</strong></p>
+<ul>
+<li><p>slice：slice截取数组时不会对原数组进行任何操作,而是生成一个新的数组；</p>
+</li>
+<li><p>splice：splice截取数组, 会返回一个新的数组, 也会对原数组进行修改；</p>
+</li>
+<li><p>slice就是一个纯函数，不会修改传入的参数；</p>
+</li>
+</ul>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318124604.jpg"></p>
+<h2 id="纯函数的优势"><a href="#纯函数的优势" class="headerlink" title="纯函数的优势"></a>纯函数的优势</h2><p><strong>想想为什么纯函数在函数式编程中非常重要呢？</strong></p>
+<ol>
+<li><p>因为你可以安心的编写和安心的使用； </p>
+</li>
+<li><p>你在<strong>写的时候</strong>保证了函数的纯度，只是单纯实现自己的业务逻辑即可，不需要关心<strong>传入的内容是如何获得的</strong>或者<strong>依赖其他的外部变量是否已经发生了修改</strong>；</p>
+</li>
+<li><p>你在<strong>用的时候</strong>，你确定你的输入内容不会被任意篡改，并且自己<strong>确定的输入，一定会有确定的输出</strong>；</p>
+</li>
+</ol>
+<h1 id="三、JavaScript柯里化"><a href="#三、JavaScript柯里化" class="headerlink" title="三、JavaScript柯里化"></a>三、JavaScript柯里化</h1><p><strong>柯里化</strong>也是属于<strong>函数式编程</strong>里面一个非常重要的概念。</p>
+<p><strong>我们先来看一下维基百科的解释：</strong></p>
+<blockquote>
+<ul>
+<li><p>在计算机科学中，<strong>柯里化</strong>（英语：Currying），又译为<strong>卡瑞化</strong>或<strong>加里化</strong>； </p>
+</li>
+<li><p>是把接收<strong>多个参数的函数</strong>，变成接受一个<strong>单一参数</strong>（最初函数的第一个参数）的函数，并且返回<strong>接受余下的参数</strong>，而且返回结果的<strong>新函数的技术</strong>； </p>
+</li>
+<li><p>柯里化声称 “<strong>如果你固定某些参数，你将得到接受余下参数的一个函数</strong>”； </p>
+</li>
+</ul>
+</blockquote>
+<p><strong>维基百科的结束非常的抽象，我们这里做一个总结：</strong></p>
+<ul>
+<li><p>只<strong>传递给函数一部分参数来调用它，让它返回一个函数去处理剩余的参数</strong>； </p>
+</li>
+<li><p><strong>这个过程就称之为柯里化</strong>；</p>
+</li>
+</ul>
+<h2 id="柯里化的结构"><a href="#柯里化的结构" class="headerlink" title="柯里化的结构"></a>柯里化的结构</h2><p>有了上面柯里化的定义，那么柯里化的结构到底是什么样的呢？我们可以通过一个例子来看看：</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318125351.jpg"></p>
+<h2 id="让函数的职责单一"><a href="#让函数的职责单一" class="headerlink" title="让函数的职责单一"></a>让函数的职责单一</h2><p><strong>那么为什么需要有柯里化呢？</strong></p>
+<p>在函数式编程中，我们其实往往希望一个函数处理的问题尽可能的单一，而不是将一大堆的处理过程交给一个函数来处理； </p>
+<p>那么我们是否就可以将每次传入的参数在单一的函数中进行处理，处理完后在下一个函数中再使用处理后的结 果； </p>
+<p>比如上面的案例我们进行一个修改：<strong>传入的函数需要分别被进行如下处理</strong></p>
+<ul>
+<li><p>第一个参数 + 2 </p>
+</li>
+<li><p>第二个参数 * 2 </p>
+</li>
+<li><p>第三个参数 ** 2</p>
+</li>
+</ul>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318125748.jpg"></p>
+<p>这样的话，我们就可以将每一次传入的参数的处理过程交给某一个函数来处理，然后再将处理后的结果交给下一个函数。这样就能有效的保证，一个函数不会因为处理过多的内容而繁琐。</p>
+<h2 id="柯里化的复用"><a href="#柯里化的复用" class="headerlink" title="柯里化的复用"></a>柯里化的复用</h2><p>另外一个使用柯里化的场景是可以帮助我们可以<strong>复用参数逻辑</strong>： </p>
+<ul>
+<li><p>makeAdder函数要求我们传入一个num（并且如果我们需要的话，可以在这里对num进行一些修改）； </p>
+</li>
+<li><p>在之后使用返回的函数时，我们不需要再继续传入num了；</p>
+</li>
+</ul>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318130120.jpg"></p>
+<p>这里我们在演示一个案例，需求是打印一些日志： </p>
+<ul>
+<li><p>日志包括时间、类型、信息； </p>
+</li>
+<li><p>普通函数的实现方案如下：</p>
+</li>
+</ul>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318130324.jpg"></p>
+<p>这里依然是用到的柯里化的参数复用哦，我们可以看到“轮播图bug”和“点击无效bug”，这两种日志的前面两个参数是一样的，那么我们就可以通过先传入两个参数获取到具有这两个参数的函数，直接进行调用，这样有效的避免了每次都传入相同参数，减少了麻烦。</p>
+<h1 id="四、理解组合函数"><a href="#四、理解组合函数" class="headerlink" title="四、理解组合函数"></a>四、理解组合函数</h1><p><strong>组合（Compose）函数</strong>是在JavaScript开发过程中一种对<strong>函数的使用技巧、模式</strong>： </p>
+<ul>
+<li>比如我们现在需要对<strong>某一个数据</strong>进行<strong>函数的调用</strong>，<strong>执行两个函数fn1和fn2，这两个函数是依次执行的</strong>；</li>
+<li>那么如果<strong>每次</strong>我们<strong>都需要进行两个函数的调用</strong>，操作上就会显得<strong>重复</strong>； </li>
+<li>那么<strong>是否可以将这两个函数组合起来，自动依次调用</strong>呢？</li>
+<li><strong>这个过程就是对函数的组合，我们称之为 组合函数（Compose Function）</strong>；</li>
+</ul>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318132103.jpg"></p>
+<h1 id="五、with语句"><a href="#五、with语句" class="headerlink" title="五、with语句"></a>五、with语句</h1><p><strong>with语句</strong> 扩展一个语句的作用域链。</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318132519.jpg"></p>
+<blockquote>
+<p>注意：不建议使用with语句，因为它可能是混淆错误和兼容性问题的根源。</p>
+</blockquote>
+<h1 id="六、eval函数"><a href="#六、eval函数" class="headerlink" title="六、eval函数"></a>六、eval函数</h1><p>eval是一个特殊的函数，它可以将传入的字符串当做JavaScript代码来运行。</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318132651.jpg"></p>
+<blockquote>
+<p><strong>不建议在开发中使用eval</strong>： </p>
+<ul>
+<li><p>eval代码的可读性非常的差（代码的可读性是高质量代码的重要原则）；</p>
+</li>
+<li><p>eval是一个字符串，那么有可能在执行的过程中被刻意篡改，那么可能会造成被攻击的风险；</p>
+</li>
+<li><p>eval的执行必须经过JS解释器，不能被JS引擎优化；</p>
+</li>
+</ul>
+</blockquote>
+<h1 id="七、认识严格模式"><a href="#七、认识严格模式" class="headerlink" title="七、认识严格模式"></a>七、认识严格模式</h1><p>在ECMAScript5标准中，JavaScript提出了<strong>严格模式的概念（Strict Mode）</strong>： </p>
+<ul>
+<li><p>严格模式很好理解，是一种具有限制性的JavaScript模式，从而使代码隐式的脱离了 ”懒散（sloppy）模式“； </p>
+</li>
+<li><p>支持严格模式的浏览器在检测到代码中有严格模式时，会以更加严格的方式对代码进行检测和执行； </p>
+</li>
+</ul>
+<p> 严格模式对正常的JavaScript语义进行了一些限制：</p>
+<ul>
+<li><p>严格模式通过 抛出错误 来消除一些原有的 静默（silent）错误；</p>
+</li>
+<li><p>严格模式让JS引擎在执行代码时可以进行更多的优化（不需要对一些特殊的语法进行处理）；</p>
+</li>
+<li><p>严格模式禁用了在ECMAScript未来版本中可能会定义的一些语法；</p>
+</li>
+</ul>
+<h2 id="如何开启严格模式"><a href="#如何开启严格模式" class="headerlink" title="如何开启严格模式"></a>如何开启严格模式</h2><p>那么如何开启严格模式呢？严格模式支持粒度话的迁移：</p>
+<ul>
+<li><p>可以支持在js文件中开启严格模式；</p>
+</li>
+<li><p>也支持对某一个函数开启严格模式；</p>
+</li>
+</ul>
+<p>严格模式通过在文件或者函数开头使用 <strong>use strict</strong> 来开启。</p>
+<p><img src="../../../../assets/js%E9%AB%98%E7%BA%A7%E7%B3%BB%E5%88%97/QQ%E6%88%AA%E5%9B%BE20220318133217.jpg"></p>
+<h2 id="严格模式的限制"><a href="#严格模式的限制" class="headerlink" title="严格模式的限制"></a>严格模式的限制</h2><p>这里我们来说几个严格模式下的严格语法限制：</p>
+<ul>
+<li><p>JavaScript被设计为新手开发者更容易上手，所以有时候本来错误语法，被认为也是可以正常被解析的；</p>
+</li>
+<li><p>但是这种方式可能给带来留下来安全隐患；</p>
+</li>
+<li><p>在严格模式下，这种失误就会被当做错误，以便可以快速的发现和修正；</p>
+</li>
+</ul>
+<p>严格模式下的一些常见限制：</p>
+<blockquote>
+<p><strong>1. 无法意外的创建全局变量</strong></p>
+<p><strong>2. 严格模式会使引起静默失败(silently fail,注:不报错也没有任何效果)的赋值操作抛出异常</strong></p>
+<p><strong>3. 严格模式下试图删除不可删除的属性</strong></p>
+<p><strong>4.严格模式不允许函数参数有相同的名称</strong></p>
+<p><strong>5. 不允许0的八进制语法</strong></p>
+<p><strong>6. 在严格模式下，不允许使用with</strong></p>
+<p><strong>7. 在严格模式下，eval不再为上层引用变量</strong></p>
+<p><strong>8. 严格模式下，this绑定不会默认转成对象</strong></p>
+</blockquote>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="mailto:undefined">mr liu</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="http://example.com/2022/03/18/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85/">http://example.com/2022/03/18/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85/</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。转载请注明来自 <a href="http://example.com" target="_blank">liu's blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/js%E9%AB%98%E7%BA%A7/">js高级</a><a class="post-meta__tags" href="/tags/%E7%BA%AF%E5%87%BD%E6%95%B0/">纯函数</a><a class="post-meta__tags" href="/tags/%E6%9F%AF%E9%87%8C%E5%8C%96/">柯里化</a><a class="post-meta__tags" href="/tags/%E7%BB%84%E5%90%88%E5%87%BD%E6%95%B0/">组合函数</a></div><div class="post_share"><div class="social-share" data-image="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85.webp" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/social-share.js/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/social-share.js/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="next-post pull-full"><a href="/2022/03/17/%E6%8E%A2%E7%A9%B6js%E5%87%BD%E6%95%B0%E7%9A%84this%E6%8C%87%E5%90%91/"><img class="next-cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%8E%A2%E7%A9%B6js%E5%87%BD%E6%95%B0%E7%9A%84this%E6%8C%87%E5%90%91.webp" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">下一篇</div><div class="next_info">探究js函数的this指向</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>相关推荐</span></div><div class="relatedPosts-list"><div><a href="/2022/03/16/js%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%92%8C%E9%97%AD%E5%8C%85/" title="js的内存管理和闭包"><img class="cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/js%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%92%8C%E9%97%AD%E5%8C%85.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-16</div><div class="title">js的内存管理和闭包</div></div></a></div><div><a href="/2022/03/17/%E6%8E%A2%E7%A9%B6js%E5%87%BD%E6%95%B0%E7%9A%84this%E6%8C%87%E5%90%91/" title="探究js函数的this指向"><img class="cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%8E%A2%E7%A9%B6js%E5%87%BD%E6%95%B0%E7%9A%84this%E6%8C%87%E5%90%91.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-17</div><div class="title">探究js函数的this指向</div></div></a></div><div><a href="/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/" title="深入js的运行原理"><img class="cover" src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86.webp" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-03-15</div><div class="title">深入js的运行原理</div></div></a></div></div></div><hr/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> 评论</span></div></div><div class="comment-wrap"><div><div class="vcomment" id="vcomment"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="card-widget card-info"><div class="is-center"><div class="avatar-img"><img src="http://img.mp.itc.cn/upload/20170808/5861bc790e654d56bc9289c567b44875_th.jpg" onerror="this.onerror=null;this.src='/img/friend_404.gif'" alt="avatar"/></div><div class="author-info__name">mr liu</div><div class="author-info__description"></div></div><div class="card-info-data"><div class="card-info-data-item is-center"><a href="/archives/"><div class="headline">文章</div><div class="length-num">8</div></a></div><div class="card-info-data-item is-center"><a href="/tags/"><div class="headline">标签</div><div class="length-num">12</div></a></div><div class="card-info-data-item is-center"><a href="/categories/"><div class="headline">分类</div><div class="length-num">2</div></a></div></div><a class="button--animated" id="card-info-btn" target="_blank" rel="noopener" href="https://github.com/xxxxxx"><i class="fab fa-github"></i><span>Follow Me</span></a></div><div class="card-widget card-announcement"><div class="item-headline"><i class="fas fa-bullhorn card-announcement-animation"></i><span>公告</span></div><div class="announcement_content">This is my Blog</div></div><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>目录</span></div><div class="toc-content"><ol class="toc"><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%80%E3%80%81%E8%AE%A4%E8%AF%86arguments"><span class="toc-number">1.</span> <span class="toc-text">一、认识arguments</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#arguments%E8%BD%AC%E4%B8%BAarray%E7%9A%84%E5%87%A0%E7%A7%8D%E6%96%B9%E6%B3%95"><span class="toc-number">1.1.</span> <span class="toc-text">arguments转为array的几种方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%AE%AD%E5%A4%B4%E5%87%BD%E6%95%B0%E4%B8%8D%E7%BB%91%E5%AE%9Aarguments"><span class="toc-number">1.2.</span> <span class="toc-text">箭头函数不绑定arguments</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%8C%E3%80%81JavaScript%E7%BA%AF%E5%87%BD%E6%95%B0"><span class="toc-number">2.</span> <span class="toc-text">二、JavaScript纯函数</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BB%80%E4%B9%88%E6%98%AF%E7%BA%AF%E5%87%BD%E6%95%B0"><span class="toc-number">2.1.</span> <span class="toc-text">什么是纯函数</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%AF%E4%BD%9C%E7%94%A8%E7%9A%84%E7%90%86%E8%A7%A3"><span class="toc-number">2.2.</span> <span class="toc-text">副作用的理解</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%AF%E5%87%BD%E6%95%B0%E7%9A%84%E6%A1%88%E4%BE%8B"><span class="toc-number">2.3.</span> <span class="toc-text">纯函数的案例</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%BA%AF%E5%87%BD%E6%95%B0%E7%9A%84%E4%BC%98%E5%8A%BF"><span class="toc-number">2.4.</span> <span class="toc-text">纯函数的优势</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%89%E3%80%81JavaScript%E6%9F%AF%E9%87%8C%E5%8C%96"><span class="toc-number">3.</span> <span class="toc-text">三、JavaScript柯里化</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%AF%E9%87%8C%E5%8C%96%E7%9A%84%E7%BB%93%E6%9E%84"><span class="toc-number">3.1.</span> <span class="toc-text">柯里化的结构</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E8%AE%A9%E5%87%BD%E6%95%B0%E7%9A%84%E8%81%8C%E8%B4%A3%E5%8D%95%E4%B8%80"><span class="toc-number">3.2.</span> <span class="toc-text">让函数的职责单一</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%9F%AF%E9%87%8C%E5%8C%96%E7%9A%84%E5%A4%8D%E7%94%A8"><span class="toc-number">3.3.</span> <span class="toc-text">柯里化的复用</span></a></li></ol></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E7%90%86%E8%A7%A3%E7%BB%84%E5%90%88%E5%87%BD%E6%95%B0"><span class="toc-number">4.</span> <span class="toc-text">四、理解组合函数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%BA%94%E3%80%81with%E8%AF%AD%E5%8F%A5"><span class="toc-number">5.</span> <span class="toc-text">五、with语句</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E5%85%AD%E3%80%81eval%E5%87%BD%E6%95%B0"><span class="toc-number">6.</span> <span class="toc-text">六、eval函数</span></a></li><li class="toc-item toc-level-1"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E8%AE%A4%E8%AF%86%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F"><span class="toc-number">7.</span> <span class="toc-text">七、认识严格模式</span></a><ol class="toc-child"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E4%BD%95%E5%BC%80%E5%90%AF%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F"><span class="toc-number">7.1.</span> <span class="toc-text">如何开启严格模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%A5%E6%A0%BC%E6%A8%A1%E5%BC%8F%E7%9A%84%E9%99%90%E5%88%B6"><span class="toc-number">7.2.</span> <span class="toc-text">严格模式的限制</span></a></li></ol></li></ol></div></div><div class="card-widget card-recent-post"><div class="item-headline"><i class="fas fa-history"></i><span>最新文章</span></div><div class="aside-list"><div class="aside-list-item"><a class="thumbnail" href="/2022/03/18/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85/" title="js函数增强和额外知识补充"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="js函数增强和额外知识补充"/></a><div class="content"><a class="title" href="/2022/03/18/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85/" title="js函数增强和额外知识补充">js函数增强和额外知识补充</a><time datetime="2022-03-18T04:30:14.000Z" title="发表于 2022-03-18 12:30:14">2022-03-18</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/03/17/%E6%8E%A2%E7%A9%B6js%E5%87%BD%E6%95%B0%E7%9A%84this%E6%8C%87%E5%90%91/" title="探究js函数的this指向"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%8E%A2%E7%A9%B6js%E5%87%BD%E6%95%B0%E7%9A%84this%E6%8C%87%E5%90%91.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="探究js函数的this指向"/></a><div class="content"><a class="title" href="/2022/03/17/%E6%8E%A2%E7%A9%B6js%E5%87%BD%E6%95%B0%E7%9A%84this%E6%8C%87%E5%90%91/" title="探究js函数的this指向">探究js函数的this指向</a><time datetime="2022-03-17T11:29:48.000Z" title="发表于 2022-03-17 19:29:48">2022-03-17</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/03/16/js%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%92%8C%E9%97%AD%E5%8C%85/" title="js的内存管理和闭包"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/js%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%92%8C%E9%97%AD%E5%8C%85.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="js的内存管理和闭包"/></a><div class="content"><a class="title" href="/2022/03/16/js%E7%9A%84%E5%86%85%E5%AD%98%E7%AE%A1%E7%90%86%E5%92%8C%E9%97%AD%E5%8C%85/" title="js的内存管理和闭包">js的内存管理和闭包</a><time datetime="2022-03-16T05:13:55.000Z" title="发表于 2022-03-16 13:13:55">2022-03-16</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/" title="深入js的运行原理"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86.webp" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="深入js的运行原理"/></a><div class="content"><a class="title" href="/2022/03/15/%E6%B7%B1%E5%85%A5js%E7%9A%84%E8%BF%90%E8%A1%8C%E5%8E%9F%E7%90%86/" title="深入js的运行原理">深入js的运行原理</a><time datetime="2022-03-15T08:51:04.000Z" title="发表于 2022-03-15 16:51:04">2022-03-15</time></div></div><div class="aside-list-item"><a class="thumbnail" href="/2022/02/10/webpack%E5%8E%9F%E7%90%86/" title="(四) webpack原理"><img src="/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/webpack%E5%8E%9F%E7%90%86.jpg" onerror="this.onerror=null;this.src='/img/404.jpg'" alt="(四) webpack原理"/></a><div class="content"><a class="title" href="/2022/02/10/webpack%E5%8E%9F%E7%90%86/" title="(四) webpack原理">(四) webpack原理</a><time datetime="2022-02-10T13:17:13.000Z" title="发表于 2022-02-10 21:17:13">2022-02-10</time></div></div></div></div></div></div></main><footer id="footer" style="background-image: url('/./assets/%E5%B0%81%E9%9D%A2%E5%9B%BE%E7%89%87/js%E5%87%BD%E6%95%B0%E5%A2%9E%E5%BC%BA%E5%92%8C%E9%A2%9D%E5%A4%96%E7%9F%A5%E8%AF%86%E8%A1%A5%E5%85%85.webp')"><div id="footer-wrap"><div class="copyright">&copy;2020 - 2022 By mr liu</div><div class="framework-info"><span>框架 </span><a target="_blank" rel="noopener" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>主题 </span><a target="_blank" rel="noopener" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div><div class="footer_custom_text">欢迎来到我的博客!</div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="阅读模式"><i class="fas fa-book-open"></i></button><button id="font-plus" type="button" title="放大字体"><i class="fas fa-plus"></i></button><button id="font-minus" type="button" title="缩小字体"><i class="fas fa-minus"></i></button><button id="darkmode" type="button" title="浅色和深色模式转换"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="单栏和双栏切换"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="设置"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="目录"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="直达评论"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="回到顶部"><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script><div class="js-pjax"><script>function loadValine () {
+  function initValine () {
+    const valine = new Valine(Object.assign({
+      el: '#vcomment',
+      appId: '',
+      appKey: '',
+      placeholder: 'Please leave your footprints',
+      avatar: 'monsterid',
+      meta: 'nick,mail,link'.split(','),
+      pageSize: '10',
+      lang: 'zh-CN',
+      recordIP: false,
+      serverURLs: '',
+      emojiCDN: '',
+      emojiMaps: "",
+      enableQQ: false,
+      path: window.location.pathname,
+      requiredFields: ["nick,mail"],
+      visitor: false
+    }, null))
+  }
+
+  if (typeof Valine === 'function') initValine() 
+  else getScript('https://cdn.jsdelivr.net/npm/valine/dist/Valine.min.js').then(initValine)
+}
+
+if ('Valine' === 'Valine' || !true) {
+  if (true) btf.loadComment(document.getElementById('vcomment'),loadValine)
+  else setTimeout(loadValine, 0)
+} else {
+  function loadOtherComment () {
+    loadValine()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/activate-power-mode.min.js"></script><script>POWERMODE.colorful = true;
+POWERMODE.shake = false;
+POWERMODE.mobile = false;
+document.body.addEventListener('input', POWERMODE);
+</script><script id="click-heart" src="https://cdn.jsdelivr.net/npm/butterfly-extsrc@1/dist/click-heart.min.js" async="async" mobile="false"></script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script></div></body></html>
